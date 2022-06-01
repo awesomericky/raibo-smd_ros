@@ -1,6 +1,6 @@
 ```
 source /opt/ros/foxy/setup.zsh
-source ../ros2_ws/install/local_setup.zsh  (realsense-ros from source)
+source ../realsense_ws/install/local_setup.zsh  (realsense-ros from source)
 source install/local_setup.zsh  (main workspace with sensor streaming)
 export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/:$LD_LIBRARY_PATH  (need in local desktop to make rviz2 available)
 ros2 launch raibo-smd_ros head_launch.py
