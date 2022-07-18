@@ -1,6 +1,7 @@
 """Launch realsense2_camera node. Include raibo-smd specific parameters from the rs_launch default"""
 import copy
 import os
+import pdb
 import sys
 import pathlib
 import yaml

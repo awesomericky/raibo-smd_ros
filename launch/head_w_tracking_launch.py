@@ -46,14 +46,23 @@ L_camera = "d435i_L" # camera2 is L
 
 R_serial_param = "'%s'"%(config[R_camera]['serial']['data'])
 L_serial_param = "'%s'"%(config[L_camera]['serial']['data'])
+Track_serial_param = "'%s'"%('109422110521')
 
 local_parameters = [
     {'name': 'camera_name1',       'default': R_camera,       'description': 'camera unique name'},
     {'name': 'camera_name2',       'default': L_camera,       'description': 'camera unique name'},
+    {'name': 'camera_name3', 'default': 'T265', 'description': 'camera unique name'},
     {'name': 'serial_no1',         'default': R_serial_param, 'description': 'choose device by serial number'},
     {'name': 'serial_no2',         'default': L_serial_param, 'description': 'choose device by serial number'},
+    {'name': 'serial_no3',         'default': Track_serial_param, 'description': 'choose device by serial number'},
     {'name': 'stereo_module.inter_cam_sync_mode1',       'default': "1",        'description': 'camera sync mode (0: default,1: master,2: slave,3: full slave,)'},
-    {'name': 'stereo_module.inter_cam_sync_mode2',       'default': "2",        'description': 'camera sync mode (0: default,1: master,2: slave,3: full slave,)'},   
+    {'name': 'stereo_module.inter_cam_sync_mode2',       'default': "2",        'description': 'camera sync mode (0: default,1: master,2: slave,3: full slave,)'},
+    # {'name': 'device_type1', 'default': 'd4.', 'description': 'choose device by type'},
+    # {'name': 'device_type2', 'default': 'd4.', 'description': 'choose device by type'},
+    {'name': 'device_type3', 'default': 't265', 'description': 'choose device by type'},
+    {'name': 'enable_pose3', 'default': 'true', 'description': 'enable pose stream'},
+    {'name': 'enable_fisheye13',              'default': 'true', 'description': 'enable fisheye1 stream'},
+    {'name': 'enable_fisheye23',              'default': 'true', 'description': 'enable fisheye2 stream'},
 ]
 
 # print(type(config['d435i_R']['serial']))
@@ -71,6 +80,7 @@ def duplicate_params(general_params, posix):
 def generate_launch_description():
     params1 = duplicate_params(depth_launch.full_parameters, '1')
     params2 = duplicate_params(depth_launch.full_parameters, '2')
+    params3 = duplicate_params(rs_launch.configurable_parameters, '3')
 
     tf_R_node = Node(
         package = "tf2_ros", 
@@ -85,6 +95,13 @@ def generate_launch_description():
         name = "base_to_"+L_camera,
         arguments = pharse_tf_args(config,R_camera),
         )
+
+    tf_Track_to_base_node = Node(
+        package = "tf2_ros",
+        executable = "static_transform_publisher",
+        name = "track_to_base",
+        arguments = ["0", "0", "0", "0", "0", "0", "base", "camera_pose_frame"],
+    )
 
     bridge_node = Node(
         package = "raibo-smd_ros",
@@ -110,9 +127,11 @@ def generate_launch_description():
         rs_launch.declare_configurable_parameters(local_parameters) +
         rs_launch.declare_configurable_parameters(params1) + 
         rs_launch.declare_configurable_parameters(params2) + 
+        rs_launch.declare_configurable_parameters(params3) +
         [
         tf_R_node,
         tf_L_node,
+        # tf_Track_to_base_node,
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource([pkg_launch_dir, '/depth_launch.py']),
             launch_arguments=set_configurable_parameters(params1).items(),
@@ -121,8 +140,13 @@ def generate_launch_description():
             PythonLaunchDescriptionSource([pkg_launch_dir, '/depth_launch.py']),
             launch_arguments=set_configurable_parameters(params2).items(),
         ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource([pkg_launch_dir, '/rs_launch.py']),
+            launch_arguments=set_configurable_parameters(params3).items(),
+        ),
         DeclareLaunchArgument('enable_raibo_bridge',default_value="true",description="launch bridge node"),
         bridge_node,
-        DeclareLaunchArgument('enable_rviz',default_value="true",description="run rviz node"),
-        rviz_node,
+        # DeclareLaunchArgument('enable_rviz',default_value="true",description="run rviz node"),
+        # rviz_node,
+
     ])
