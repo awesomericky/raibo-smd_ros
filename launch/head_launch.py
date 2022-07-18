@@ -122,6 +122,6 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument('enable_raibo_bridge',default_value="true",description="launch bridge node"),
         bridge_node,
-        DeclareLaunchArgument('enable_rviz',default_value="true",description="run rviz node"),
-        rviz_node,
+        # DeclareLaunchArgument('enable_rviz',default_value="true",description="run rviz node"),
+        # rviz_node,
     ])
